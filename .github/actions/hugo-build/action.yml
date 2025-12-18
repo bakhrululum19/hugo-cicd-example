@@ -1,0 +1,22 @@
+name: hugo-build
+description: Setup Hugo with a specific version and run a build command.
+inputs:
+  hugo-version:
+    description: Version of Hugo to install
+    required: true
+  build-args:
+    description: Extra arguments to pass to the hugo command
+    required: false
+    default: --minify
+runs:
+  using: composite
+  steps:
+    - name: Setup Hugo
+      uses: peaceiris/actions-hugo@v3
+      with:
+        hugo-version: ${{ inputs.hugo-version }}
+        extended: true
+    - name: Run Hugo build
+      shell: bash
+      run: |
+        hugo ${{ inputs.build-args }}

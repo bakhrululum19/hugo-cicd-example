@@ -1,0 +1,51 @@
+---
+title: CICD
+author: 
+date: '2025-12-12'
+categories:
+  - Example
+tags:
+  - github
+  - github actions
+---
+
+## CI/CD
+
+### Preview
+
+Preview builds start on the `dev` branch:
+
+1. Content authors work on feature branches and open PRs into `dev`.
+2. Merging to `dev` triggers **Preview Deploy** (`.github/workflows/dev-preview.yml`), which builds the site and rsyncs `public/` to `preview/hugo-cicd-example/` on host before running the remote `deploy … preview` script.
+3. Editors verify the preview site and raise a PR from `dev` to `main` once everything looks good.
+
+### From draft to production
+
+Production promotion is an explicit workflow_dispatch:
+
+1. Ensure the `dev → main` PR is approved.
+2. Run **Promote Dev to Production** (`promote-dev-to-main.yml`) with the confirmation toggle.
+3. The job fast-forwards `main` to the latest `dev`, pushes it, rebuilds with the checked-in submodule, rsyncs to `prod/hugo-cicd-example/`, then runs the remote `deploy … prod` script.
+4. Because `main` only moves via this workflow, the deployed site always matches repository state.
+
+### Reverting or pinning deployments
+
+Use **Rollback Production** (`rollback-main.yml`) via workflow_dispatch:
+
+- `mode: previous` resets `main` to `HEAD~1`, force-pushes with lease, rebuilds, and redeploys.
+- `mode: commit` accepts an explicit hash, validates it exists, hard-resets `main`, then rebuilds and redeploys.
+
+Either path keeps the remote host in sync because the workflow always rebuilds before rsyncing and calling the prod deploy script.
+
+### Access control and branch protection
+
+1. Protect `main`:
+   - Require review on the `dev → main` PR.
+   - Restrict who can push directly (ideally automation token + release admins).
+   - Require the PR validation workflow to pass before merging.
+2. Protect `dev` with status checks for the preview workflow to prevent broken previews.
+3. Limit workflow_dispatch permissions:
+   - Store `DEPLOY_KEY`, `DEPLOY_HOST` and `MAIN_PUSH_TOKEN` secrets with access only for release admins.
+   - Use GitHub’s “Allow only specific actors to run” option if available.
+
+With branch protection + workflow gating, only designated operators can advance or roll back production, while contributors continue iterating safely on `dev`.

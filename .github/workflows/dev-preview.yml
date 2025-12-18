@@ -1,0 +1,34 @@
+name: Preview Deploy
+
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source (with theme submodule)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      
+      - uses: ./.github/actions/hugo-build
+        with:
+          hugo-version: ${{ env.HUGO_VERSION }}
+          build-args: --buildDrafts --buildFuture --minify
+
+      - name: Deploy preview
+        if: false # TODO: enable when we have a deploy key
+        uses: ./.github/actions/remote-deploy
+        with:
+          deploy-key: ${{ secrets.DEPLOY_KEY }}
+          deploy-host: ${{ secrets.DEPLOY_HOST }}
+          remote-path: preview/hugo-cicd-example/
+          deploy-environment: preview

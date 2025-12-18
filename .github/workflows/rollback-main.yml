@@ -1,0 +1,76 @@
+name: Rollback Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Rollback target"
+        type: choice
+        options:
+          - previous
+          - commit
+        default: previous
+        required: true
+      commit:
+        description: "Specific commit to roll back to (required when mode=commit)"
+        type: string
+        required: false
+
+env:
+  HUGO_VERSION: "0.134.3"
+
+jobs:
+  rollback-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main (with submodules)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          submodules: recursive
+          token: ${{ secrets.MAIN_PUSH_TOKEN }}
+
+      - name: Determine target commit
+        id: target
+        env:
+          MODE: ${{ github.event.inputs.mode }}
+          COMMIT_HASH: ${{ github.event.inputs.commit }}
+        run: |
+          if [ "$MODE" = "previous" ]; then
+            TARGET=$(git rev-parse HEAD~1)
+          else
+            if [ -z "$COMMIT_HASH" ]; then
+              echo "Commit hash required when mode=commit"
+              exit 1
+            fi
+            if ! git cat-file -e "$COMMIT_HASH^{commit}" 2>/dev/null; then
+              echo "Commit $COMMIT_HASH does not exist"
+              exit 1
+            fi
+            TARGET=$COMMIT_HASH
+          fi
+          echo "commit=$TARGET" >> $GITHUB_OUTPUT
+          echo "Target commit: $TARGET"
+
+      - name: Reset main to target
+        env:
+          TARGET_COMMIT: ${{ steps.target.outputs.commit }}
+        run: |
+          git checkout main
+          git reset --hard "$TARGET_COMMIT"
+          git push origin HEAD:main --force-with-lease
+
+      - name: Build production site
+        uses: ./.github/actions/hugo-build
+        with:
+          hugo-version: ${{ env.HUGO_VERSION }}
+
+      - name: Deploy production
+        if: false # TODO: enable when we have a deploy key
+        uses: ./.github/actions/remote-deploy
+        with:
+          deploy-key: ${{ secrets.DEPLOY_KEY }}
+          deploy-host: ${{ secrets.DEPLOY_HOST }}
+          remote-path: prod/hugo-cicd-example/
+          deploy-environment: prod
