@@ -24,6 +24,13 @@ jobs:
           hugo-version: ${{ env.HUGO_VERSION }}
           build-args: --buildDrafts --buildFuture --minify
 
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-site
+          path: public
+          retention-days: 7
+
       - name: Deploy preview
         if: false # TODO: enable when we have a deploy key
         uses: ./.github/actions/remote-deploy

@@ -85,6 +85,13 @@ jobs:
         with:
           hugo-version: ${{ env.HUGO_VERSION }}
 
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-site
+          path: public
+          retention-days: 7
+
       - name: Deploy production
         if: false # TODO: enable when we have a deploy key
         uses: ./.github/actions/remote-deploy
