@@ -6,13 +6,13 @@ footnotereturnlinkcontents: "↩"
 
 menu:
   main:
-    - name: Home
+    - name: Posts
       url: ""
       weight: 1
-    - name: Posts
-      url: "posts/"
+    - name: About
+      url: "about/"
       weight: 2
 
 params:
-  description: ""
-  footer: ""
+  description: "more description: [...]"
+  footer: "footer content"

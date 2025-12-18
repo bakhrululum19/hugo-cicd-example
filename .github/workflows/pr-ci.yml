@@ -107,10 +107,11 @@ jobs:
             echo "❌ Missing homepage!"
             exit 1
           fi
-          if [ ! -f "public/posts/index.html" ]; then
-            echo "❌ Missing posts index!"
-            exit 1
-          fi
+          ## not needed really, theme has posts on home
+          # if [ ! -f "public/posts/index.html" ]; then
+          #   echo "❌ Missing posts index!"
+          #   exit 1
+          # fi
           echo "✅ Build output looks good"
 
   validate-content:
