@@ -33,7 +33,7 @@ jobs:
           ref: main
           fetch-depth: 0
           submodules: recursive
-          token: ${{ secrets.MAIN_PUSH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Determine target commit
         id: target
