@@ -27,9 +27,9 @@ jobs:
         run: |
           GO_VERSION=$(grep "^go " go.mod | awk '{print $2}')
           HUGO_VERSION=$(grep "github.com/gohugoio/hugo v" go.mod | awk '{print $2}' | sed 's/v//')
-          echo "go_version=${GO_VERSION}.0" >> $GITHUB_OUTPUT
+          echo "go_version=${GO_VERSION}" >> $GITHUB_OUTPUT
           echo "hugo_version=${HUGO_VERSION}" >> $GITHUB_OUTPUT
-          echo "Using Go version: ${GO_VERSION}.0"
+          echo "Using Go version: ${GO_VERSION}"
           echo "Using Hugo version: ${HUGO_VERSION}"
 
       - name: Setup Go
