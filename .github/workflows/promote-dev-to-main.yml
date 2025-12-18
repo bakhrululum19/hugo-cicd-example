@@ -16,6 +16,9 @@ jobs:
   promote-and-deploy:
     if: ${{ github.event.inputs.confirm == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout main (with submodules)
         uses: actions/checkout@v4
