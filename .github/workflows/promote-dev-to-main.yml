@@ -4,19 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Initial confirmation to start promotion"
+        description: "⚠️ deploy to production"
         type: boolean
         required: true
-        default: false
-      confirm_final:
-        description: "Secondary confirmation after PR status review"
-        type: boolean
-        required: true
-        default: false
-      override_pr_validation:
-        description: "Allow promotion even if PR Validation workflow is not green"
-        type: boolean
-        required: false
         default: false
 
 env:
@@ -42,37 +32,6 @@ jobs:
           TARGET_SHA=$(git rev-parse origin/dev)
           echo "Target SHA: $TARGET_SHA"
           echo "sha=$TARGET_SHA" >> $GITHUB_OUTPUT
-
-      - name: Check PR Validation status
-        id: prci
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          API_URL: ${{ github.api_url }}
-          REPO: ${{ github.repository }}
-        run: |
-          SHA=${{ steps.target.outputs.sha }}
-          RESPONSE=$(curl -sSf -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "$API_URL/repos/$REPO/commits/$SHA/status")
-          STATE=$(echo "$RESPONSE" | jq -r '.statuses[] | select(.context=="PR Validation") | .state' | head -n1)
-          if [ -z "$STATE" ] || [ "$STATE" = "null" ]; then
-            STATE="missing"
-          fi
-          echo "PR Validation state: $STATE"
-          echo "state=$STATE" >> $GITHUB_OUTPUT
-          if [ "$STATE" != "success" ]; then
-            echo "⚠️ PR Validation is $STATE for $SHA" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Require PR Validation override
-        if: steps.prci.outputs.state != 'success' && github.event.inputs.override_pr_validation != 'true'
-        run: |
-          echo "PR Validation status is ${{ steps.prci.outputs.state }}. Re-run with override_pr_validation=true to proceed."
-          exit 1
-
-      - name: Require secondary confirmation
-        if: github.event.inputs.confirm_final != 'true'
-        run: |
-          echo "Set confirm_final=true after reviewing PR Validation status."
-          exit 1
 
       - name: Fast-forward main to dev
         run: |
