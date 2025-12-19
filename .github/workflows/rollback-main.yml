@@ -21,6 +21,8 @@ env:
 
 jobs:
   rollback-and-deploy:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main (with submodules)
@@ -29,7 +31,7 @@ jobs:
           ref: main
           fetch-depth: 0
           submodules: recursive
-          token: ${{ secrets.MAIN_PUSH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Determine target commit
         id: target
