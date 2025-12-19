@@ -9,6 +9,9 @@ concurrency:
   group: preview-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  HUGO_VERSION: "0.152.2"
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
