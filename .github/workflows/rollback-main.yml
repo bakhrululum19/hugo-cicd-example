@@ -17,7 +17,7 @@ on:
         required: false
 
 env:
-  HUGO_VERSION: "0.134.3"
+  HUGO_VERSION: "0.152.2"
 
 jobs:
   rollback-and-deploy:
